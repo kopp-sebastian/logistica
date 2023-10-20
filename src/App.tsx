@@ -1,8 +1,19 @@
 import Graph from "./components/Graph.tsx";
 import NodesList from "./components/NodesList.tsx";
+import EdgesList from "./components/EdgesList.tsx";
 import MenuListItem from "./components/MenuListItem.tsx";
+import { useNodes } from "./providers/NodesContext.tsx";
+import { useEdges } from "./providers/EdgesContext.tsx";
 
 function App() {
+  const { clearNodes } = useNodes();
+  const { clearEdges } = useEdges();
+
+  const handleLogisticaClick = () => {
+    clearNodes();
+    clearEdges();
+  }
+
   const handleDijkstraClick = () => {
     // handle Dijkstra click
   };
@@ -15,25 +26,49 @@ function App() {
     // handle CPP click
   };
 
-  const handleTestClick = () => {
-    // handle Test click
-  };
-
   return (
-    <div className="flex flex-row">
-      <div className="flex flex-col">
-        <div className="text-red-800 hover:bg-gray-100 py-3 px-6 text-xl font-semibold border-2 border-t-1 transition-colors duration-300">
-          <p className="font-mono font-bold text-2xl ml-3 mt-6 mb-6 mr-3">
-            Logistica
-          </p>
+    <div className="flex flex-row h-screen bg-gray-200">
+      <div className="flex flex-col w-64 bg-white shadow-lg">
+        <div
+          className="flex items-center justify-center w-full h-16 bg-gradient-to-r from-red-500 to-red-800 hover:from-red-600 hover:to-red-900 text-white font-bold"
+          onClick={handleLogisticaClick}
+        >
+          Logistica
         </div>
-        <MenuListItem label="Dijkstra" onClick={handleDijkstraClick} />
-        <MenuListItem label="TSP" onClick={handleTSPClick} />
-        <MenuListItem label="CPP" onClick={handleCPPClick} />
-        <MenuListItem label="Test" onClick={handleTestClick} />
+        <div className="flex flex-col flex-grow overflow-y-auto">
+          <div
+            className="w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
+            onClick={handleDijkstraClick}
+          >
+            Dijkstra
+          </div>
+          <div
+            className="w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
+            onClick={handleTSPClick}
+          >
+            TSP
+          </div>
+          <div
+            className="w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
+            onClick={handleCPPClick}
+          >
+            CPP
+          </div>
+        </div>
       </div>
-      <Graph />
-      <NodesList />
+      <div className="flex flex-col flex-grow">
+        <div className="flex flex-row flex-grow">
+          <div className="flex flex-col flex-grow">
+            <div className="flex flex-row flex-grow">
+              <Graph />
+            </div>
+          </div>
+          <div className="flex flex-row flex-grow">
+            <NodesList />
+            <EdgesList />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
