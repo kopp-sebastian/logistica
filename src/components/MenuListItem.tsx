@@ -1,19 +1,19 @@
 import React from 'react';
 
-interface MenuButtonProps {
+interface MenuListItemProps {
     label: string;
     onClick: () => void;
 }
 
-const MenuButton: React.FC<MenuButtonProps> = ({ label, onClick }) => {
+const MenuListItem: React.FC<MenuListItemProps> = ({ label, onClick }) => {
     return (
-        <button
-            className="text-red-800 hover:bg-gray-100 py-3 px-6 text-xl font-semibold border-2 border-t-1 transition-colors duration-300"
+        <div
+            className="w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
             onClick={onClick}
         >
             {label}
-        </button>
+        </div>
     );
 }
 
-export default MenuButton;
+export default MenuListItem;

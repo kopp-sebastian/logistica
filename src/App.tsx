@@ -1,18 +1,19 @@
-import Graph from "./components/Graph.tsx";
-import NodesList from "./components/NodesList.tsx";
-import EdgesList from "./components/EdgesList.tsx";
-import MenuListItem from "./components/MenuListItem.tsx";
-import { useNodes } from "./providers/NodesContext.tsx";
-import { useEdges } from "./providers/EdgesContext.tsx";
+import React from 'react';
+import Graph from './components/Graph';
+import NodesList from './components/NodesList';
+import EdgesList from './components/EdgesList';
+import MenuList from './components/MenuList';
+import { useNodes } from './providers/NodesContext';
+import { useEdges } from './providers/EdgesContext';
 
-function App() {
+const App: React.FC = () => {
   const { clearNodes } = useNodes();
   const { clearEdges } = useEdges();
 
   const handleLogisticaClick = () => {
     clearNodes();
     clearEdges();
-  }
+  };
 
   const handleDijkstraClick = () => {
     // handle Dijkstra click
@@ -35,26 +36,11 @@ function App() {
         >
           Logistica
         </div>
-        <div className="flex flex-col flex-grow overflow-y-auto">
-          <div
-            className="w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
-            onClick={handleDijkstraClick}
-          >
-            Dijkstra
-          </div>
-          <div
-            className="w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
-            onClick={handleTSPClick}
-          >
-            TSP
-          </div>
-          <div
-            className="w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
-            onClick={handleCPPClick}
-          >
-            CPP
-          </div>
-        </div>
+        <MenuList
+          handleDijkstraClick={handleDijkstraClick}
+          handleTSPClick={handleTSPClick}
+          handleCPPClick={handleCPPClick}
+        />
       </div>
       <div className="flex flex-col flex-grow">
         <div className="flex flex-row flex-grow">
@@ -71,6 +57,6 @@ function App() {
       </div>
     </div>
   );
-}
+};
 
 export default App;
