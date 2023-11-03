@@ -48,8 +48,8 @@ const Graph = () => {
       .style('-ms-user-select', 'none')
       .style('user-select', 'none');
 
-    const width = 700;
-    const height = 700;
+    const width = 800;
+    const height = 800;
     const margin = 40;
 
     const xScale = d3.scaleLinear().domain([-100, 100]).range([margin, width - margin]);
@@ -218,6 +218,7 @@ const Graph = () => {
     }
     return 0;
   })
+
   .attr('y', (d) => {
     const source = nodes.find(node => node.id === d.from);
     const target = nodes.find(node => node.id === d.to);
@@ -241,7 +242,7 @@ const Graph = () => {
     return "-0.3em";
   })
   .attr('text-anchor', 'middle')
-  .attr('font-size', '14px')
+  .attr('font-size', '16px')
   .attr('fill', 'black')
   .text((d) => d.weight);
 
@@ -271,7 +272,7 @@ const Graph = () => {
 
   return (
     <div>
-      <svg ref={svgRef} width={700} height={700}></svg>
+      <svg ref={svgRef} width={800} height={800}></svg>
       {showWeightingDialog && (
         <WeightingDialog sourceNode={sourceNode} targetNode={targetNode} onClose={handleWeightingDialogClose} />
       )}

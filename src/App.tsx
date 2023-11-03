@@ -1,10 +1,9 @@
 import React from 'react';
 import Graph from './components/Graph';
-import NodesList from './components/NodesList';
-import EdgesList from './components/EdgesList';
 import MenuList from './components/MenuList';
 import { useNodes } from './providers/NodesContext';
 import { useEdges } from './providers/EdgesContext';
+import Matrix from './components/Matrix';
 
 const App: React.FC = () => {
   const { clearNodes } = useNodes();
@@ -49,10 +48,7 @@ const App: React.FC = () => {
               <Graph />
             </div>
           </div>
-          <div className="flex flex-row flex-grow">
-            <NodesList />
-            <EdgesList />
-          </div>
+          <Matrix />
         </div>
       </div>
     </div>
