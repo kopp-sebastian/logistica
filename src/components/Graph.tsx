@@ -5,7 +5,13 @@ import { useEdges } from '../providers/EdgesContext';
 import { Node } from '../providers/NodesContext';
 import WeightingDialog from './WeightingDialog';
 
-const Graph = () => {
+interface GraphProps {
+  onNodeSelect: (nodeId: number | null) => void;
+  selectedNode: number | null;
+  isManualWeightInput: boolean;
+}
+
+const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeightInput }) => {
   const { nodes, addNode } = useNodes();
   const { edges, addEdge } = useEdges();
   const [sourceNode, setSourceNode] = useState<Node | null>(null);
@@ -14,8 +20,12 @@ const Graph = () => {
   const [isDragging, setIsDragging] = useState(false);
 
   const svgRef = useRef<SVGSVGElement>(null);
-
   const tempLineRef = useRef<any>(null);
+  const isManualWeightInputRef = useRef(isManualWeightInput);
+
+  useEffect(() => {
+    isManualWeightInputRef.current = isManualWeightInput;
+  }, [isManualWeightInput]);
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -74,9 +84,9 @@ const Graph = () => {
       .selectAll('line')
       .attr('stroke', (_, i) => (i === 5 ? 'black' : '#babbbf'));
 
-    // Axis generators
-    const xAxis = d3.axisBottom(xScale);
-    const yAxis = d3.axisLeft(yScale);
+    // Axes
+    const xAxis = d3.axisBottom(xScale).ticks(10);
+    const yAxis = d3.axisLeft(yScale).ticks(10);
 
     // Append x-axis
     gridLayer.append("g")
@@ -111,10 +121,34 @@ const Graph = () => {
 
     const nodeGroup = nodeLayer
       .selectAll('.node')
-      .data(nodes)
+      .data(nodes, (node: any) => node.id)
       .join('g')
       .attr('class', 'node')
-      .attr('transform', d => `translate(${xScale(d.x)}, ${yScale(d.y)})`);
+      .attr('transform', (d: Node) => `translate(${xScale(d.x)}, ${yScale(d.y)})`)
+      .on('mouseover', function () {
+        d3.select(this).select('.node-circle')
+          .transition()
+          .duration(150)
+          .attr('r', 16)
+          .attr('stroke-width', 3);
+
+        d3.select(this).select('text')
+          .transition()
+          .duration(150)
+          .attr('font-size', '14px');
+      })
+      .on('mouseout', function () {
+        d3.select(this).select('.node-circle')
+          .transition()
+          .duration(150)
+          .attr('r', 13)
+          .attr('stroke-width', 1);
+
+        d3.select(this).select('text')
+          .transition()
+          .duration(150)
+          .attr('font-size', '12px');
+      });
 
     nodeGroup
       .append('circle')
@@ -122,9 +156,17 @@ const Graph = () => {
       .attr('cx', 0)
       .attr('cy', 0)
       .attr('r', 13)
-      .attr('fill', 'blue')
+      .attr('fill', d => (selectedNode === d.id ? 'green' : 'blue'))
       .attr('stroke', 'black')
-      .attr('stroke-width', 1);
+      .attr('stroke-width', 1)
+      .on('click', (event, d) => {
+        event.stopPropagation(); // Prevent the SVG click event
+        if (d.id === selectedNode) {
+          onNodeSelect(null); // Unselect if the same node is clicked
+        } else {
+          onNodeSelect(d.id);
+        }
+      });
 
     nodeGroup
       .append('text')
@@ -133,7 +175,15 @@ const Graph = () => {
       .attr('text-anchor', 'middle')
       .attr('font-size', '12px')
       .attr('fill', 'white')
-      .text(d => d.id);
+      .text(d => d.id)
+      .on('click', (event, d) => {
+        event.stopPropagation(); // Prevent the SVG click event
+        if (d.id === selectedNode) {
+          onNodeSelect(null); // Unselect if the same node is clicked
+        } else {
+          onNodeSelect(d.id);
+        }
+      });
 
     nodeLayer.selectAll('.node');
 
@@ -165,8 +215,7 @@ const Graph = () => {
         );
 
         if (target && target.id !== d.id) {
-          setTargetNode(target);
-          setShowWeightingDialog(true);
+          handleEdgeCreation(d, target);
         } else {
           if (tempLineRef.current) {
             tempLineRef.current.remove();
@@ -203,48 +252,48 @@ const Graph = () => {
       .attr('fill', 'none');
 
     edgeGroup
-  .append('text')
-  .attr('x', (d) => {
-    const source = nodes.find(node => node.id === d.from);
-    const target = nodes.find(node => node.id === d.to);
-    if (source && target) {
-      const midX = xScale((source.x + target.x) / 2);
-      const deltaY = target.y - source.y;
-      const deltaX = target.x - source.x;
-      const slope = deltaY / deltaX;
+      .append('text')
+      .attr('x', (d) => {
+        const source = nodes.find(node => node.id === d.from);
+        const target = nodes.find(node => node.id === d.to);
+        if (source && target) {
+          const midX = xScale((source.x + target.x) / 2);
+          const deltaY = target.y - source.y;
+          const deltaX = target.x - source.x;
+          const slope = deltaY / deltaX;
 
-      const offset = Math.abs(slope) > 5 ? 10 : 0;  // Add horizontal offset for nearly vertical lines
-      return midX + offset;
-    }
-    return 0;
-  })
+          const offset = Math.abs(slope) > 5 ? 10 : 0;  // Add horizontal offset for nearly vertical lines
+          return midX + offset;
+        }
+        return 0;
+      })
 
-  .attr('y', (d) => {
-    const source = nodes.find(node => node.id === d.from);
-    const target = nodes.find(node => node.id === d.to);
-    if (source && target) {
-      const midY = yScale((source.y + target.y) / 2);
-      return midY;
-    }
-    return 0;
-  })
-  .attr('dy', (d) => {
-    const source = nodes.find(node => node.id === d.from);
-    const target = nodes.find(node => node.id === d.to);
-    if (source && target) {
-      const deltaY = target.y - source.y;
-      const deltaX = target.x - source.x;
-      const slope = deltaY / deltaX;
+      .attr('y', (d) => {
+        const source = nodes.find(node => node.id === d.from);
+        const target = nodes.find(node => node.id === d.to);
+        if (source && target) {
+          const midY = yScale((source.y + target.y) / 2);
+          return midY;
+        }
+        return 0;
+      })
+      .attr('dy', (d) => {
+        const source = nodes.find(node => node.id === d.from);
+        const target = nodes.find(node => node.id === d.to);
+        if (source && target) {
+          const deltaY = target.y - source.y;
+          const deltaX = target.x - source.x;
+          const slope = deltaY / deltaX;
 
-      // Add vertical offset for nearly vertical lines
-      return Math.abs(slope) > 5 ? "-1.5em" : "-0.3em";
-    }
-    return "-0.3em";
-  })
-  .attr('text-anchor', 'middle')
-  .attr('font-size', '16px')
-  .attr('fill', 'black')
-  .text((d) => d.weight);
+          // Add vertical offset for nearly vertical lines
+          return Math.abs(slope) > 5 ? "-1.5em" : "-0.3em";
+        }
+        return "-0.3em";
+      })
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '16px')
+      .attr('fill', 'black')
+      .text((d) => d.weight);
 
 
     edgeLayer.selectAll('.edge');
@@ -255,7 +304,7 @@ const Graph = () => {
     if (edges.length === 0) {
       edgeLayer.selectAll('.edge').remove();
     }
-  }, [nodes, edges]);
+  }, [nodes, edges, selectedNode]);
 
   const handleWeightingDialogClose = (weight: number, sourceNode: Node | null) => {
     if (sourceNode && targetNode) {
@@ -263,11 +312,33 @@ const Graph = () => {
       setSourceNode(null);
       setTargetNode(null);
     }
+    removeTempLine();
+    setShowWeightingDialog(false);
+  };
+
+  const handleEdgeCreation = (source: Node, target: Node) => {
+    if (isManualWeightInputRef.current) {
+      setSourceNode(source);
+      setTargetNode(target);
+      setShowWeightingDialog(true);
+    } else {
+      const weight = calculateWeight(source, target);
+      addEdge(source.id, target.id, Math.round(weight));
+      removeTempLine();
+    }
+  };
+
+  const removeTempLine = () => {
     if (tempLineRef.current) {
       tempLineRef.current.remove();
       tempLineRef.current = null;
     }
-    setShowWeightingDialog(false);
+  }
+
+  const calculateWeight = (nodeA: Node, nodeB: Node) => {
+    const xDistance = Math.abs(nodeA.x - nodeB.x);
+    const yDistance = Math.abs(nodeA.y - nodeB.y);
+    return Math.sqrt(xDistance ** 2 + yDistance ** 2);
   };
 
   return (

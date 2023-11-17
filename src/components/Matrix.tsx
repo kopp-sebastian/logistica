@@ -29,33 +29,31 @@ const Matrix: React.FC = () => {
   const matrix = createMatrix();
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 m-4 w-[calc(95vw-1000px)] h-90">
-      <div className="max-h-[50vh] overflow-x-auto overflow-y-auto">
+    <div className="overflow-auto max-h-[calc(100%-1rem)]">
       <table className="min-w-full">
-          <thead>
-            <tr>
-              <th className="py-2 px-3 border-b border-gray-300 font-bold">#</th>
-              {nodes.map((node, index) => (
-                <th key={index} className="py-2 px-3 border-b border-gray-300 font-bold">
-                  {node.id}
-                </th>
+        <thead>
+          <tr>
+            <th className="py-1 px-2 border-b border-gray-300 font-bold">#</th>
+            {nodes.map((node, index) => (
+              <th key={index} className="py-1 px-2 border-b border-gray-300 font-bold">
+                {node.id}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {matrix.map((row, i) => (
+            <tr key={i}>
+              <td className="py-1 px-2 border-b border-gray-300 text-center font-bold">{nodes[i].id}</td>
+              {row.map((cell, j) => (
+                <td key={j} className="py-1 px-2 border-b border-gray-300 text-center">
+                  {cell}
+                </td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {matrix.map((row, i) => (
-              <tr key={i}>
-                <td className="py-2 px-3 border-b border-gray-300 text-center font-bold">{nodes[i].id}</td>
-                {row.map((cell, j) => (
-                  <td key={j} className="py-2 px-3 border-b border-gray-300 text-center">
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
