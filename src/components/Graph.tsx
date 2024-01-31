@@ -129,8 +129,8 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
         d3.select(this).select('.node-circle')
           .transition()
           .duration(150)
-          .attr('r', 16)
-          .attr('stroke-width', 3);
+          .attr('r', 13)
+          .attr('stroke-width', 8);
 
         d3.select(this).select('text')
           .transition()
