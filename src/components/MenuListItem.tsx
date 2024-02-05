@@ -8,8 +8,11 @@ interface MenuListItemProps {
 
 const MenuListItem: React.FC<MenuListItemProps> = ({ label, onClick, onInfoClick }) => {
     return (
-        <div className="flex justify-between items-center w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer">
-            <div onClick={onClick}>
+        <div
+            className="flex justify-between items-center w-full py-3 px-6 text-xl font-semibold transition-colors duration-300 hover:bg-gray-100 cursor-pointer"
+            onClick={onClick}
+        >
+            <div>
                 {label}
             </div>
             <div onClick={onInfoClick}>
