@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { marked } from 'marked';
-import { dijkstraDescription } from 'public/markdown/dijkstraDescription.html';
 
 interface AlgorithmInfoDialogProps {
   title: string;

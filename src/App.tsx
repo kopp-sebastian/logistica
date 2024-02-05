@@ -11,6 +11,7 @@ import AlgorithmInfoDialog from './components/AlgorithmInfoDialog';
 import Button from './components/Button';
 import { exportGraphToCSV } from './utils/exportGraphToCSV';
 import { importGraphFromCSV } from './utils/importGraphFromCSV';
+import AlgorithmWindow from './components/AlgorithmWindow';
 
 
 const App: React.FC = () => {
@@ -20,6 +21,8 @@ const App: React.FC = () => {
   const [dijkstraResults, setDijkstraResults] = useState<any>(null);
   const [isManualWeightInput, setIsManualWeightInput] = useState(true);
   const [showDijkstraInfo, setShowDijkstraInfo] = useState(false);
+  const [showAlgorithmWindow, setShowAlgorithmWindow] = useState(false);
+  const [algorithmSteps, setAlgorithmSteps] = useState<string>('');
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -29,14 +32,13 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogisticaClick = () => {
+  const clearBoard = () => {
     clearNodes();
     clearEdges();
   };
 
-  const handleImportButtonClick = () => {
-    clearNodes();
-    clearEdges();
+  const handleImportClick = () => {
+    clearBoard();
     fileInputRef.current.click();
   }
 
@@ -44,6 +46,8 @@ const App: React.FC = () => {
     if (selectedNode != null) {
       const results = dijkstra(nodes, edges, selectedNode);
       setDijkstraResults(results);
+      const stepsHtml = results.steps.map(step => `<p>${step.description}</p>`).join('');
+      setAlgorithmSteps(stepsHtml);
     }
   };
 
@@ -53,12 +57,17 @@ const App: React.FC = () => {
   const handleTSPClick = () => {/* TSP click handler */ };
   const handleCPPClick = () => {/* CPP click handler */ };
 
+  const handleShowAlgorithmExplanation = () => {
+    // Optionally, you can set the algorithmSteps state here if it's not set elsewhere
+    setShowAlgorithmWindow(true);
+  };
+
   return (
     <div className="flex flex-row h-screen bg-gray-100 select-none">
       <div className="flex flex-col w-64 bg-white shadow-lg">
         <div
           className="flex items-center justify-center w-full h-16 bg-gradient-to-r from-red-500 to-red-800 text-white font-bold cursor-pointer"
-          onClick={handleLogisticaClick}
+          onClick={clearBoard}
         >
           Logistica
         </div>
@@ -76,6 +85,7 @@ const App: React.FC = () => {
             onChange={(checked) => setIsManualWeightInput(checked)}
           />
         </div>
+
         <div className="flex justify-around items-center mb-4">
           <Button
             buttonText="Export"
@@ -95,7 +105,7 @@ const App: React.FC = () => {
           />
           <Button
             buttonText="Import"
-            onClick={() => fileInputRef.current.click()}
+            onClick={() => handleImportClick()}
             className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
             icon={
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 mr-2">
@@ -117,6 +127,16 @@ const App: React.FC = () => {
               <hr className="border-t border-gray-300" />
               <div className="flex flex-col flex-1 overflow-hidden">
                 <DijkstraCalculation results={dijkstraResults} />
+                <Button
+                  buttonText=""
+                  onClick={handleShowAlgorithmExplanation}
+                  className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded flex items-center justify-center"
+                  icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                    </svg>
+                  }
+                />
               </div>
             </div>
           </div>
@@ -126,6 +146,13 @@ const App: React.FC = () => {
         <AlgorithmInfoDialog
           title="Dijkstra Algorithm"
           onClose={handleCloseDijkstraInfo}
+        />
+      )}
+      {showAlgorithmWindow && (
+        <AlgorithmWindow
+          title="Dijkstra Algorithm"
+          content={algorithmSteps}
+          onClose={() => setShowAlgorithmWindow(false)}
         />
       )}
     </div>
