@@ -31,7 +31,6 @@ const parseCSV = (csvString: string): { nodes: Node[], edges: Edge[] } => {
             }
         }
     }
-
     return { nodes, edges };
 };
 
