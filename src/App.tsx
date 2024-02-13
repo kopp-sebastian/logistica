@@ -5,6 +5,7 @@ import Matrix from './components/Matrix';
 import { useNodes } from './providers/NodesContext';
 import { useEdges } from './providers/EdgesContext';
 import dijkstra from './algorithms/dijkstra';
+import solveCPP from './algorithms/cpp';
 import ToggleSwitch from './components/ToggleSwitch';
 import DijkstraCalculation from './components/DijkstraCalculation';
 import AlgorithmInfoDialog from './components/AlgorithmInfoDialog';
@@ -12,6 +13,7 @@ import Button from './components/Button';
 import { exportGraphToCSV } from './utils/exportGraphToCSV';
 import { importGraphFromCSV } from './utils/importGraphFromCSV';
 import AlgorithmWindow from './components/AlgorithmWindow';
+import Result from './components/Result';
 
 
 const App: React.FC = () => {
@@ -23,6 +25,8 @@ const App: React.FC = () => {
   const [showDijkstraInfo, setShowDijkstraInfo] = useState(false);
   const [showAlgorithmWindow, setShowAlgorithmWindow] = useState(false);
   const [algorithmSteps, setAlgorithmSteps] = useState<string>('');
+  const [currentAlgorithm, setCurrentAlgorithm] = useState<'Dijkstra' | 'TSP' | 'CPP' | null>(null);
+  const [algorithmResults, setAlgorithmResults] = useState<any>(null); // Use appropriate type
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -45,17 +49,26 @@ const App: React.FC = () => {
   const handleDijkstraClick = () => {
     if (selectedNode != null) {
       const results = dijkstra(nodes, edges, selectedNode);
-      setDijkstraResults(results);
-      const stepsHtml = results.steps.map(step => `<p>${step.description}</p>`).join('');
-      setAlgorithmSteps(stepsHtml);
+      setCurrentAlgorithm('Dijkstra');
+      setAlgorithmResults({
+        distances: results.distances,
+        paths: results.paths,
+        // Include steps if you plan to use them for explanation or display
+        steps: results.steps.map(step => step.description).join('<br>') // Adjust according to your needs
+      });
     }
   };
 
   const handleDijkstraInfoClick = () => setShowDijkstraInfo(true);
   const handleCloseDijkstraInfo = () => setShowDijkstraInfo(false);
 
-  const handleTSPClick = () => {/* TSP click handler */ };
-  const handleCPPClick = () => {/* CPP click handler */ };
+  const handleTSPClick = () => {/* TSP click handler */ }
+  
+  const handleCPPClick = () => {
+    const results = solveCPP(nodes, edges);
+    setCurrentAlgorithm('CPP');
+    setAlgorithmResults(results); // Ensure `solveCPP` returns a structure that `Result` expects for CPP
+  };
 
   const handleShowAlgorithmExplanation = () => {
     // Optionally, you can set the algorithmSteps state here if it's not set elsewhere
@@ -126,7 +139,7 @@ const App: React.FC = () => {
               </div>
               <hr className="border-t border-gray-300" />
               <div className="flex flex-col flex-1 overflow-hidden">
-                <DijkstraCalculation results={dijkstraResults} />
+                <Result algorithm={currentAlgorithm} results={algorithmResults}/>
                 <Button
                   buttonText=""
                   onClick={handleShowAlgorithmExplanation}
