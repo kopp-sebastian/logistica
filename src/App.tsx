@@ -7,7 +7,6 @@ import { useEdges } from './providers/EdgesContext';
 import dijkstra from './algorithms/dijkstra';
 import solveCPP from './algorithms/cpp';
 import ToggleSwitch from './components/ToggleSwitch';
-import DijkstraCalculation from './components/DijkstraCalculation';
 import AlgorithmInfoDialog from './components/AlgorithmInfoDialog';
 import Button from './components/Button';
 import { exportGraphToCSV } from './utils/exportGraphToCSV';
@@ -20,13 +19,13 @@ const App: React.FC = () => {
   const { nodes, clearNodes, setNodes } = useNodes();
   const { edges, clearEdges, setEdges } = useEdges();
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
-  const [dijkstraResults, setDijkstraResults] = useState<any>(null);
+  const [isGraphBidirectional, setIsGraphBidirectional] = useState(true);
   const [isManualWeightInput, setIsManualWeightInput] = useState(true);
   const [showDijkstraInfo, setShowDijkstraInfo] = useState(false);
   const [showAlgorithmWindow, setShowAlgorithmWindow] = useState(false);
   const [algorithmSteps, setAlgorithmSteps] = useState<string>('');
   const [currentAlgorithm, setCurrentAlgorithm] = useState<'Dijkstra' | 'TSP' | 'CPP' | null>(null);
-  const [algorithmResults, setAlgorithmResults] = useState<any>(null); // Use appropriate type
+  const [algorithmResults, setAlgorithmResults] = useState<any>(null);
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -53,11 +52,11 @@ const App: React.FC = () => {
       setAlgorithmResults({
         distances: results.distances,
         paths: results.paths,
-        // Include steps if you plan to use them for explanation or display
-        steps: results.steps.map(step => step.description).join('<br>') // Adjust according to your needs
       });
+      // Update the algorithmSteps state with the joined HTML string of steps
+      setAlgorithmSteps(results.steps.map(step => step.description).join(''));
     }
-  };
+  };  
 
   const handleDijkstraInfoClick = () => setShowDijkstraInfo(true);
   const handleCloseDijkstraInfo = () => setShowDijkstraInfo(false);
@@ -94,8 +93,16 @@ const App: React.FC = () => {
         />
         <div className="mt-auto mb-8">
           <ToggleSwitch
-            isManualInput={isManualWeightInput}
+            labelOn="Manual Weighting"
+            labelOff="Automatic Weighting"
+            isChecked={isManualWeightInput}
             onChange={(checked) => setIsManualWeightInput(checked)}
+          />
+          <ToggleSwitch
+            labelOn="Bidirectional"
+            labelOff="Unidirectional"
+            isChecked={isGraphBidirectional}
+            onChange={setIsGraphBidirectional} // Adjust to control graph directionality
           />
         </div>
 
@@ -131,7 +138,7 @@ const App: React.FC = () => {
       </div>
       <div className="flex flex-col flex-grow p-6 space-y-4">
         <div className="flex flex-row h-full">
-          <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} />
+          <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} isGraphBidirectional={isGraphBidirectional}/>
           <div className="flex flex-col w-[calc(95vw-1000px)] h-full">
             <div className="flex flex-col bg-white rounded-lg shadow-md h-full">
               <div className="flex flex-col flex-1 overflow-hidden">

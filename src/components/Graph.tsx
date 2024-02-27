@@ -9,9 +9,10 @@ interface GraphProps {
   onNodeSelect: (nodeId: number | null) => void;
   selectedNode: number | null;
   isManualWeightInput: boolean;
+  isGraphBidirectional: boolean;
 }
 
-const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeightInput }) => {
+const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeightInput, isGraphBidirectional }) => {
   const { nodes, addNode } = useNodes();
   const { edges, addEdge } = useEdges();
   const [sourceNode, setSourceNode] = useState<Node | null>(null);
@@ -31,6 +32,24 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
     if (!svgRef.current) return;
 
     const svg = d3.select(svgRef.current);
+
+    svg.selectAll('defs').remove(); // Clear previous defs
+    svg.append('defs').append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '-0 -5 10 10') // You might not need to change this
+      .attr('refX', 20) // Adjust this value to control the arrow's position relative to the node
+      .attr('refY', 0)
+      .attr('orient', 'auto')
+      .attr('markerWidth', 6) // Smaller width for a sleeker arrow
+      .attr('markerHeight', 6) // Smaller height for a sleeker arrow
+      .attr('xoverflow', 'visible')
+      .append('svg:path')
+      .attr('d', 'M 0,-5 L 10 ,0 L 0,5') // This path defines a basic arrow shape
+      .attr('fill', 'black') // Use black fill for the arrow
+      .attr('stroke', 'black') // Match the arrow color
+      .attr('stroke-width', 1.5); // Adjust the stroke width as needed
+
+
 
     // Initialize layers only if they don't already exist
     if (!svg.select('#grid-layer').node()) {
@@ -101,11 +120,8 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
     gridLayer.append('g')
 
     svg.on('click', function (event) {
-      if (isDragging) { // New condition
+      if (isDragging) {
         setIsDragging(false);
-        return;
-      }
-      if (d3.select(event.target).classed('node-circle')) {
         return;
       }
       if (d3.select(event.target).classed('node-circle')) {
@@ -226,9 +242,27 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
       });
     (nodeGroup as any).call(dragBehavior);
 
-    const lineGenerator = d3.line<{ x: number; y: number }>()
+    const lineGenerator = d3.line()
       .x(d => xScale(d.x))
       .y(d => yScale(d.y));
+
+    const edgeSelection = edgeLayer.selectAll('.edge')
+      .data(edges, d => `${d.from}-${d.to}`);
+
+    edgeSelection.enter().append('path')
+      .merge(edgeSelection)
+      .attr('class', 'edge')
+      .attr('d', d => {
+        const source = nodes.find(node => node.id === d.from);
+        const target = nodes.find(node => node.id === d.to);
+        return lineGenerator([{ x: source.x, y: source.y }, { x: target.x, y: target.y }]);
+      })
+      .attr('stroke', 'black')
+      .attr('stroke-width', 2)
+      .attr('fill', 'none')
+      .attr('marker-end', d => isGraphBidirectional ? '' : 'url(#arrowhead)');
+
+    edgeSelection.exit().remove();
 
     const edgeGroup = edgeLayer
       .selectAll('.edge-group')
@@ -249,7 +283,8 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
       })
       .attr('stroke', 'black')
       .attr('stroke-width', 2)
-      .attr('fill', 'none');
+      .attr('fill', 'none')
+      .attr('marker-end', d => isGraphBidirectional || d.from === d.to ? '' : 'url(#arrowhead)');
 
     edgeGroup
       .append('text')
@@ -304,7 +339,7 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
     if (edges.length === 0) {
       edgeLayer.selectAll('.edge').remove();
     }
-  }, [nodes, edges, selectedNode]);
+  }, [nodes, edges, selectedNode, isGraphBidirectional]);
 
   const handleWeightingDialogClose = (weight: number, sourceNode: Node | null) => {
     if (sourceNode && targetNode) {
@@ -317,15 +352,30 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
   };
 
   const handleEdgeCreation = (source: Node, target: Node) => {
+    // Check for existing edges to prevent duplicates
+    const edgeExists = edges.some(edge => edge.from === source.id && edge.to === target.id);
+    const reverseEdgeExists = edges.some(edge => edge.to === source.id && edge.from === target.id);
+
+    // In bidirectional mode, treat reverse edges as duplicates
+    // In unidirectional mode, only direct edge duplicates are prevented
+    if (edgeExists || (isGraphBidirectional && reverseEdgeExists)) {
+      console.log("Edge already exists.");
+      removeTempLine();
+      return;
+    }
+
+    // Proceed to create edge or show weighting dialog based on user input mode
     if (isManualWeightInputRef.current) {
       setSourceNode(source);
       setTargetNode(target);
       setShowWeightingDialog(true);
     } else {
+      // Directly calculate weight and add the edge
       const weight = calculateWeight(source, target);
       addEdge(source.id, target.id, Math.round(weight));
-      removeTempLine();
+      // No automatic reverse edge creation in unidirectional mode
     }
+    removeTempLine();
   };
 
   const removeTempLine = () => {
