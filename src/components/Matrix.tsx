@@ -17,7 +17,7 @@ const Matrix: React.FC = () => {
           row.push(0);
           return;
         }
-        const edge = edges.find((e) => (e.from === i + 1 && e.to === j + 1) || (e.from === j + 1 && e.to === i + 1));
+        const edge = edges.find((e) => (e.from === i + 1 && e.to === j + 1));
         row.push(edge ? edge.weight : '-');
       });
       matrix.push(row);
