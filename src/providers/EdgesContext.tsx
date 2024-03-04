@@ -11,6 +11,7 @@ interface EdgesContextType {
   edges: Edge[];
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
   addEdge: (from: number, to: number, weight: number) => void;
+  makeEdgesBidirectional: () => void; // New function declaration
   clearEdges: () => void;
 }
 
@@ -40,12 +41,48 @@ export const EdgesProvider: React.FC<EdgesProviderProps> = ({ children }) => {
     setNextEdgeId(nextEdgeId + 1);
   };
 
+  const makeEdgesBidirectional = () => {
+    console.log('Making edges bidirectional');
+    setEdges((prevEdges) => {
+      let modified = false;
+      const edgeMap = new Map();
+      const newEdges = [...prevEdges];
+
+      // Create a map for quick lookup
+      prevEdges.forEach(edge => {
+        edgeMap.set(`${edge.from}-${edge.to}`, edge);
+      });
+
+      // Check for missing reverse edges and prepare to add them
+      prevEdges.forEach(edge => {
+        if (!edgeMap.has(`${edge.to}-${edge.from}`)) {
+          modified = true;
+          const newEdge = {
+            id: nextEdgeId,
+            from: edge.to,
+            to: edge.from,
+            weight: edge.weight,
+          };
+          newEdges.push(newEdge);
+          setNextEdgeId((currentId) => currentId + newEdges.length - prevEdges.length);
+        }
+      });
+
+      if (modified) {
+        console.log('Adding bidirectional edges', newEdges);
+        setNextEdgeId(nextEdgeId); // Update the nextEdgeId
+      }
+
+      return newEdges; // Return the updated edges array
+    });
+  };
+
   const clearEdges = () => {
     setEdges([]);
   }
 
   return (
-    <EdgesContext.Provider value={{ edges, setEdges, addEdge, clearEdges }}>
+    <EdgesContext.Provider value={{ edges, setEdges, addEdge, makeEdgesBidirectional, clearEdges }}>
       {children}
     </EdgesContext.Provider>
   );

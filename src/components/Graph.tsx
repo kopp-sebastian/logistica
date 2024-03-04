@@ -356,27 +356,44 @@ const Graph: React.FC<GraphProps> = ({ onNodeSelect, selectedNode, isManualWeigh
     const edgeExists = edges.some(edge => edge.from === source.id && edge.to === target.id);
     const reverseEdgeExists = edges.some(edge => edge.to === source.id && edge.from === target.id);
 
-    // In bidirectional mode, treat reverse edges as duplicates
-    // In unidirectional mode, only direct edge duplicates are prevented
-    if (edgeExists || (isGraphBidirectional && reverseEdgeExists)) {
+    // In bidirectional mode, we no longer treat reverse edges as duplicates here
+    // because we want to explicitly add both directional edges
+    if (edgeExists && (!isGraphBidirectional || (isGraphBidirectional && reverseEdgeExists))) {
       console.log("Edge already exists.");
       removeTempLine();
       return;
     }
 
-    // Proceed to create edge or show weighting dialog based on user input mode
+    const addBidirectionalEdges = () => {
+      // Calculate weight for the edge from source to target
+      const weight = calculateWeight(source, target);
+      addEdge(source.id, target.id, Math.round(weight));
+
+      // Calculate weight for the reverse edge from target to source
+      const reverseWeight = calculateWeight(target, source);
+      addEdge(target.id, source.id, Math.round(reverseWeight));
+    };
+
+    // Proceed to create edge(s) or show weighting dialog based on user input mode
     if (isManualWeightInputRef.current) {
       setSourceNode(source);
       setTargetNode(target);
       setShowWeightingDialog(true);
+      // The actual edge creation in bidirectional mode with manual input 
+      // would need to be handled after input, potentially calling addBidirectionalEdges
     } else {
-      // Directly calculate weight and add the edge
-      const weight = calculateWeight(source, target);
-      addEdge(source.id, target.id, Math.round(weight));
-      // No automatic reverse edge creation in unidirectional mode
+      if (isGraphBidirectional) {
+        // For bidirectional graphs, create edges in both directions
+        addBidirectionalEdges();
+      } else {
+        // For unidirectional graphs, only add the direct edge
+        const weight = calculateWeight(source, target);
+        addEdge(source.id, target.id, Math.round(weight));
+      }
     }
     removeTempLine();
-  };
+};
+
 
   const removeTempLine = () => {
     if (tempLineRef.current) {

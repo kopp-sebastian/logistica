@@ -5,7 +5,7 @@ import Matrix from './components/Matrix';
 import { useNodes } from './providers/NodesContext';
 import { useEdges } from './providers/EdgesContext';
 import dijkstra from './algorithms/dijkstra';
-import solveCPP from './algorithms/cpp';
+import solveCPP from './algorithms/cppOld';
 import ToggleSwitch from './components/ToggleSwitch';
 import AlgorithmInfoDialog from './components/AlgorithmInfoDialog';
 import Button from './components/Button';
@@ -13,19 +13,20 @@ import { exportGraphToCSV } from './utils/exportGraphToCSV';
 import { importGraphFromCSV } from './utils/importGraphFromCSV';
 import AlgorithmWindow from './components/AlgorithmWindow';
 import Result from './components/Result';
-
+import EdgesList from './components/EdgesList';
 
 const App: React.FC = () => {
   const { nodes, clearNodes, setNodes } = useNodes();
   const { edges, clearEdges, setEdges } = useEdges();
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
   const [isGraphBidirectional, setIsGraphBidirectional] = useState(true);
-  const [isManualWeightInput, setIsManualWeightInput] = useState(true);
+  const [isManualWeightInput, setIsManualWeightInput] = useState(false);
   const [showDijkstraInfo, setShowDijkstraInfo] = useState(false);
   const [showAlgorithmWindow, setShowAlgorithmWindow] = useState(false);
   const [algorithmSteps, setAlgorithmSteps] = useState<string>('');
   const [currentAlgorithm, setCurrentAlgorithm] = useState<'Dijkstra' | 'TSP' | 'CPP' | null>(null);
   const [algorithmResults, setAlgorithmResults] = useState<any>(null);
+  const { makeEdgesBidirectional } = useEdges();
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
@@ -56,13 +57,13 @@ const App: React.FC = () => {
       // Update the algorithmSteps state with the joined HTML string of steps
       setAlgorithmSteps(results.steps.map(step => step.description).join(''));
     }
-  };  
+  };
 
   const handleDijkstraInfoClick = () => setShowDijkstraInfo(true);
   const handleCloseDijkstraInfo = () => setShowDijkstraInfo(false);
 
   const handleTSPClick = () => {/* TSP click handler */ }
-  
+
   const handleCPPClick = () => {
     const results = solveCPP(nodes, edges);
     setCurrentAlgorithm('CPP');
@@ -72,6 +73,13 @@ const App: React.FC = () => {
   const handleShowAlgorithmExplanation = () => {
     // Optionally, you can set the algorithmSteps state here if it's not set elsewhere
     setShowAlgorithmWindow(true);
+  };
+
+  const toggleBidirectional = (checked) => {
+    setIsGraphBidirectional(checked);
+    if (checked) {
+      makeEdgesBidirectional(); // Call this function when switching to bidirectional mode
+    }
   };
 
   return (
@@ -102,10 +110,16 @@ const App: React.FC = () => {
             labelOn="Bidirectional"
             labelOff="Unidirectional"
             isChecked={isGraphBidirectional}
-            onChange={setIsGraphBidirectional} // Adjust to control graph directionality
+            onChange={(checked) => {
+              setIsGraphBidirectional(checked); // Continue to set the state
+              if (checked) {
+                makeEdgesBidirectional(); // Additionally make edges bidirectional if the switch is turned on
+              }
+            }}
           />
-        </div>
 
+        </div>
+ 
         <div className="flex justify-around items-center mb-4">
           <Button
             buttonText="Export"
@@ -138,7 +152,7 @@ const App: React.FC = () => {
       </div>
       <div className="flex flex-col flex-grow p-6 space-y-4">
         <div className="flex flex-row h-full">
-          <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} isGraphBidirectional={isGraphBidirectional}/>
+          <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} isGraphBidirectional={isGraphBidirectional} />
           <div className="flex flex-col w-[calc(95vw-1000px)] h-full">
             <div className="flex flex-col bg-white rounded-lg shadow-md h-full">
               <div className="flex flex-col flex-1 overflow-hidden">
@@ -146,7 +160,7 @@ const App: React.FC = () => {
               </div>
               <hr className="border-t border-gray-300" />
               <div className="flex flex-col flex-1 overflow-hidden">
-                <Result algorithm={currentAlgorithm} results={algorithmResults}/>
+                <Result algorithm={currentAlgorithm} results={algorithmResults} />
                 <Button
                   buttonText=""
                   onClick={handleShowAlgorithmExplanation}

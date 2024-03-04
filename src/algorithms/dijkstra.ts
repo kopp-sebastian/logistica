@@ -30,7 +30,7 @@ const dijkstra = (nodes: Node[], edges: Edge[], startNodeId: NodeId) => {
     distances[node.id] = node.id === startNodeId ? 0 : Infinity;
     previous[node.id] = null;
     steps.push({
-      description: DOMPurify.sanitize(`<div class="mb-2 p-2 rounded border-l-4 border-blue-500 bg-blue-100">Set initial distances from node ${node.id} to all others to infinity, except to itself (0).</div>`)
+      description: DOMPurify.sanitize(`<div>Set initial distances from node ${node.id} to all others to infinity, except to itself (0).</div>`)
     });
   });
 
@@ -54,10 +54,10 @@ const dijkstra = (nodes: Node[], edges: Edge[], startNodeId: NodeId) => {
 
     unvisited.delete(current);
     steps.push({
-      description: DOMPurify.sanitize(`<div class="mb-2 p-2 rounded border-l-4 border-green-500 bg-green-100">Select node ${current} with the shortest distance from the unvisited set and remove it.</div>`)
+      description: DOMPurify.sanitize(`<div>Select node ${current} with the shortest distance from the unvisited set and remove it.</div>`)
     });
 
-    const currentEdges = edges.filter(edge => edge.from === current || edge.to === current);
+    const currentEdges = edges.filter(edge => edge.from === current);
     currentEdges.forEach(edge => {
       const neighbor = edge.from === current ? edge.to : edge.from;
       if (!unvisited.has(neighbor)) return;
@@ -67,7 +67,7 @@ const dijkstra = (nodes: Node[], edges: Edge[], startNodeId: NodeId) => {
         distances[neighbor] = newDistance;
         previous[neighbor] = current;
         steps.push({
-          description: DOMPurify.sanitize(`<div class="mb-2 p-2 rounded border-l-4 border-yellow-500 bg-yellow-100">Update distance from node ${current} to its neighbor ${neighbor}: New Distance = ${newDistance}.</div>`)
+          description: DOMPurify.sanitize(`<div>Update distance from node ${current} to its neighbor ${neighbor}: New Distance = ${newDistance}.</div>`)
         });
       }
     });
@@ -87,7 +87,7 @@ const dijkstra = (nodes: Node[], edges: Edge[], startNodeId: NodeId) => {
   );
 
   steps.push({
-    description: DOMPurify.sanitize(`<div class="mb-2 p-2 rounded border-l-4 border-red-500 bg-red-100">All nodes have been visited. Dijkstra's algorithm has completed.</div>`)
+    description: DOMPurify.sanitize(`<div>All nodes have been visited. Dijkstra's algorithm has completed.</div>`)
   });
 
   return {
