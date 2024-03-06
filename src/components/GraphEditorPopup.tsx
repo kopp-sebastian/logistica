@@ -5,7 +5,12 @@ import { useEdges } from '../providers/EdgesContext';
 
 const GraphEditorPopup: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { nodes, removeNode } = useNodes();
-  const { edges, removeEdge } = useEdges();
+  const { edges, removeEdge, removeEdgesByNodeId } = useEdges();
+
+  const removeNodeAndConnectedEdges = (id: number) => {
+    removeEdgesByNodeId(id);
+    removeNode(id);
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -19,7 +24,7 @@ const GraphEditorPopup: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <span>Node {node.id}: ({node.x}, {node.y})</span>
                 <button
                   className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs"
-                  onClick={() => removeNode(node.id)}
+                  onClick={() => removeNodeAndConnectedEdges(node.id)}
                 >
                   Delete
                 </button>
