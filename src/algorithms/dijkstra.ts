@@ -19,7 +19,7 @@ interface DijkstraStep {
   description: string;
 }
 
-const dijkstra = (nodes: Node[], edges: Edge[], startNodeId: NodeId) => {
+const dijkstra = (nodes: Node[], edges: Edge[], startNodeId: NodeId, isBidirectional: boolean) => {
   const distances: { [nodeId: number]: number } = {};
   const previous: { [nodeId: number]: NodeId | null } = {};
   const steps: DijkstraStep[] = [];
@@ -57,9 +57,9 @@ const dijkstra = (nodes: Node[], edges: Edge[], startNodeId: NodeId) => {
       description: DOMPurify.sanitize(`<div>Select node ${current} with the shortest distance from the unvisited set and remove it.</div>`)
     });
 
-    const currentEdges = edges.filter(edge => edge.from === current);
+    const currentEdges = edges.filter(edge => edge.from === current || (isBidirectional && edge.to === current));
     currentEdges.forEach(edge => {
-      const neighbor = edge.from === current ? edge.to : edge.from;
+      const neighbor = edge.to === current ? edge.from : edge.to;
       if (!unvisited.has(neighbor)) return;
 
       const newDistance = distances[current] + edge.weight;

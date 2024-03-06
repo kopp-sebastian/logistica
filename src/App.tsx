@@ -5,22 +5,24 @@ import Matrix from './components/Matrix';
 import { useNodes } from './providers/NodesContext';
 import { useEdges } from './providers/EdgesContext';
 import dijkstra from './algorithms/dijkstra';
-import solveCPP from './algorithms/cppOld';
-import ToggleSwitch from './components/ToggleSwitch';
+// import * as cpp from "./chinese-postman-problem";  // Import the default export
+import solveCPP from './algorithms/cpp';
 import AlgorithmInfoDialog from './components/AlgorithmInfoDialog';
 import Button from './components/Button';
 import { exportGraphToCSV } from './utils/exportGraphToCSV';
 import { importGraphFromCSV } from './utils/importGraphFromCSV';
 import AlgorithmWindow from './components/AlgorithmWindow';
 import Result from './components/Result';
+import ToggleSwitch from './components/ToggleSwitch';
 import EdgesList from './components/EdgesList';
+
 
 const App: React.FC = () => {
   const { nodes, clearNodes, setNodes } = useNodes();
   const { edges, clearEdges, setEdges } = useEdges();
   const [selectedNode, setSelectedNode] = useState<number | null>(null);
   const [isGraphBidirectional, setIsGraphBidirectional] = useState(true);
-  const [isManualWeightInput, setIsManualWeightInput] = useState(false);
+  const [isManualWeightInput, setIsManualWeightInput] = useState(true);
   const [showDijkstraInfo, setShowDijkstraInfo] = useState(false);
   const [showAlgorithmWindow, setShowAlgorithmWindow] = useState(false);
   const [algorithmSteps, setAlgorithmSteps] = useState<string>('');
@@ -48,7 +50,7 @@ const App: React.FC = () => {
 
   const handleDijkstraClick = () => {
     if (selectedNode != null) {
-      const results = dijkstra(nodes, edges, selectedNode);
+      const results = dijkstra(nodes, edges, selectedNode, isGraphBidirectional);
       setCurrentAlgorithm('Dijkstra');
       setAlgorithmResults({
         distances: results.distances,
@@ -64,22 +66,22 @@ const App: React.FC = () => {
 
   const handleTSPClick = () => {/* TSP click handler */ }
 
-  const handleCPPClick = () => {
-    const results = solveCPP(nodes, edges);
-    setCurrentAlgorithm('CPP');
-    setAlgorithmResults(results); // Ensure `solveCPP` returns a structure that `Result` expects for CPP
+  const handleCPPClick = async () => {
+    try {
+      const results = solveCPP(nodes, edges, isGraphBidirectional);
+      setCurrentAlgorithm('CPP');
+      setAlgorithmResults(results);
+    } catch (error) {
+      if (error instanceof Error) {
+        setAlgorithmResults(error);
+      }
+    }
   };
+  
 
   const handleShowAlgorithmExplanation = () => {
     // Optionally, you can set the algorithmSteps state here if it's not set elsewhere
     setShowAlgorithmWindow(true);
-  };
-
-  const toggleBidirectional = (checked) => {
-    setIsGraphBidirectional(checked);
-    if (checked) {
-      makeEdgesBidirectional(); // Call this function when switching to bidirectional mode
-    }
   };
 
   return (
@@ -112,14 +114,14 @@ const App: React.FC = () => {
             isChecked={isGraphBidirectional}
             onChange={(checked) => {
               setIsGraphBidirectional(checked); // Continue to set the state
-              if (checked) {
-                makeEdgesBidirectional(); // Additionally make edges bidirectional if the switch is turned on
-              }
+              // if (checked) {
+              //   makeEdgesBidirectional(); // Additionally make edges bidirectional if the switch is turned on
+              // }
             }}
           />
 
         </div>
- 
+
         <div className="flex justify-around items-center mb-4">
           <Button
             buttonText="Export"
@@ -152,11 +154,16 @@ const App: React.FC = () => {
       </div>
       <div className="flex flex-col flex-grow p-6 space-y-4">
         <div className="flex flex-row h-full">
-          <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} isGraphBidirectional={isGraphBidirectional} />
+          <div className="flex flex-col h-full">
+            <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} isGraphBidirectional={isGraphBidirectional} />
+            <div className="text-center text-3xl font-bold my-4">
+              Work in Progress!
+            </div>
+          </div>
           <div className="flex flex-col w-[calc(95vw-1000px)] h-full">
             <div className="flex flex-col bg-white rounded-lg shadow-md h-full">
               <div className="flex flex-col flex-1 overflow-hidden">
-                <Matrix />
+                <Matrix isGraphBidirectional={isGraphBidirectional} />
               </div>
               <hr className="border-t border-gray-300" />
               <div className="flex flex-col flex-1 overflow-hidden">

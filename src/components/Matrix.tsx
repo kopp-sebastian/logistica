@@ -2,7 +2,11 @@ import React from 'react';
 import { useNodes } from '../providers/NodesContext';
 import { useEdges } from '../providers/EdgesContext';
 
-const Matrix: React.FC = () => {
+interface MatrixProps {
+  isGraphBidirectional: boolean;
+}
+
+const Matrix: React.FC<MatrixProps> = ({ isGraphBidirectional }) => {
   const { nodes } = useNodes();
   const { edges } = useEdges();
 
@@ -17,12 +21,16 @@ const Matrix: React.FC = () => {
           row.push(0);
           return;
         }
-        const edge = edges.find((e) => (e.from === i + 1 && e.to === j + 1));
+        let edge;
+        if(isGraphBidirectional) {
+          edge = edges.find((e) => (e.from === i + 1 && e.to === j + 1) || (e.from === j + 1 && e.to === i + 1));
+        } else {
+          edge = edges.find((e) => (e.from === i + 1 && e.to === j + 1));
+        }
         row.push(edge ? edge.weight : '-');
       });
       matrix.push(row);
     });
-
     return matrix;
   };
 

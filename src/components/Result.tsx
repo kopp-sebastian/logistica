@@ -19,7 +19,9 @@ interface ResultProps {
 
 const Result: React.FC<ResultProps> = ({ algorithm, results }) => {
   if (!results) return <div>No calculations yet.</div>;
-  console.log('test');
+  if (results instanceof Error) {
+    return <div className="text-red-500 font-bold">{results.message}</div>;
+  }
   console.log(results);
   switch (algorithm) {
     case 'Dijkstra':
