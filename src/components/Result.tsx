@@ -18,7 +18,7 @@ interface ResultProps {
 }
 
 const Result: React.FC<ResultProps> = ({ algorithm, results }) => {
-  if (!results) return <div>No calculations yet.</div>;
+  if (!results) return <div className="text-center text-xl my-8">Keine Berechnung durchgeführt.</div>;
   if (results instanceof Error) {
     return <div className="text-red-500 font-bold">{results.message}</div>;
   }

@@ -21,7 +21,7 @@ const AlgorithmWindow: React.FC<AlgorithmWindowProps> = ({ title, content, onClo
         <h2 className="text-xl font-bold mb-4">{title}</h2>
         <div dangerouslySetInnerHTML={content ? createMarkup() : { __html: DOMPurify.sanitize(defaultContent) }} />
         <button
-          className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="mt-4 duration-300 hover:bg-gray-100 text-black border-red-700 border-2 py-2 px-4 rounded"
           onClick={onClose}
         >
           Schließen

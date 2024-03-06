@@ -11,6 +11,7 @@ interface NodesContextType {
   setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
   addNode: (node: Node) => void;
   clearNodes: () => void;
+  removeNode: (id: number) => void;
 }
 
 const NodesContext = createContext<NodesContextType | undefined>(undefined);
@@ -38,8 +39,12 @@ export const NodesProvider: React.FC<NodesProviderProps> = ({ children }) => {
     setNodes([]);
   };
 
+  const removeNode = (id: number) => {
+    setNodes((prevNodes) => prevNodes.filter(node => node.id !== id));
+  };  
+
   return (
-    <NodesContext.Provider value={{ nodes, setNodes, addNode, clearNodes }}>
+    <NodesContext.Provider value={{ nodes, setNodes, addNode, clearNodes, removeNode }}>
       {children}
     </NodesContext.Provider>
   );

@@ -13,6 +13,8 @@ interface EdgesContextType {
   addEdge: (from: number, to: number, weight: number) => void;
   makeEdgesBidirectional: () => void; // New function declaration
   clearEdges: () => void;
+  removeEdge: (id: number) => void;
+  removeEdgesByNodeId: (nodeId: number) => void;
 }
 
 const EdgesContext = createContext<EdgesContextType | undefined>(undefined);
@@ -81,8 +83,16 @@ export const EdgesProvider: React.FC<EdgesProviderProps> = ({ children }) => {
     setEdges([]);
   }
 
+  const removeEdge = (id: number) => {
+    setEdges((prevEdges) => prevEdges.filter(edge => edge.id !== id));
+  };
+
+  const removeEdgesByNodeId = (nodeId: number) => {
+    setEdges((currentEdges) => currentEdges.filter(edge => edge.from !== nodeId && edge.to !== nodeId));
+  };
+
   return (
-    <EdgesContext.Provider value={{ edges, setEdges, addEdge, makeEdgesBidirectional, clearEdges }}>
+    <EdgesContext.Provider value={{ edges, setEdges, addEdge, makeEdgesBidirectional, clearEdges, removeEdge, removeEdgesByNodeId }}>
       {children}
     </EdgesContext.Provider>
   );
