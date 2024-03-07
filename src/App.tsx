@@ -175,9 +175,6 @@ const App: React.FC = () => {
             <div className="flex flex-row h-full">
               <div className="flex flex-col h-full">
                 <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} isGraphBidirectional={isGraphBidirectional} />
-                <div className="text-center text-3xl font-bold my-4">
-                  Work in Progress!
-                </div>
               </div>
               <div className="flex flex-col w-[calc(95vw-1000px)] h-full">
                 <div className="flex flex-col bg-white rounded-lg shadow-md h-full">
