@@ -31,12 +31,12 @@ const AlgorithmInfoDialog: React.FC<AlgorithmInfoDialogProps> = ({ title, onClos
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
+      <div className="bg-white p-6 rounded-lg max-w-2xl w-full h-full overflow-auto">
         <h2 className="text-xl font-bold mb-4">{title}</h2>
 
-        <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-        <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={onClose}>
-          Close
+        <div dangerouslySetInnerHTML={{ __html: htmlContent }} className="h-auto max-h-[70vh]" />
+        <button className="mt-4 duration-300 hover:bg-gray-100 text-black border-red-800 border-2 py-2 px-4 rounded" onClick={onClose}>
+          Schließen
         </button>
       </div>
     </div>

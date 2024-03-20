@@ -7,6 +7,7 @@ import { useEdges } from './providers/EdgesContext';
 import dijkstra from './algorithms/dijkstra';
 // import * as cpp from "./chinese-postman-problem";  // Import the default export
 import solveCPP from './algorithms/cpp';
+import { solveTSP } from './algorithms/tsp';
 import AlgorithmInfoDialog from './components/AlgorithmInfoDialog';
 import Button from './components/Button';
 import { exportGraphToCSV } from './utils/exportGraphToCSV';
@@ -73,7 +74,11 @@ const App: React.FC = () => {
   const handleDijkstraInfoClick = () => setShowDijkstraInfo(true);
   const handleCloseDijkstraInfo = () => setShowDijkstraInfo(false);
 
-  const handleTSPClick = () => {/* TSP click handler */ }
+  const handleTSPClick = () => {
+    const results = solveTSP(nodes);
+    setCurrentAlgorithm('TSP');
+    setAlgorithmResults(results);
+  };
 
   const handleCPPClick = async () => {
     try {
@@ -105,10 +110,11 @@ const App: React.FC = () => {
           handleDijkstraClick={handleDijkstraClick}
           handleDijkstraInfoClick={handleDijkstraInfoClick}
           handleTSPClick={handleTSPClick}
-          handleTSPInfoClick={handleDijkstraInfoClick}
+          handleTSPInfoClick={handleDijkstraInfoClick} // You might want to create a separate info dialog for TSP if needed
           handleCPPClick={handleCPPClick}
           handleCPPInfoClick={handleDijkstraInfoClick}
         />
+
         <div className="mt-auto mb-8">
           <ToggleSwitch
             labelOn="Manual Weighting"
@@ -126,26 +132,26 @@ const App: React.FC = () => {
           />
 
         </div>
-          <Button
-            buttonText="Graph bearbeiten"
-            onClick={handleGraphEditorToggle}
-            className="duration-300 hover:bg-gray-100 text-black border-red-700 border-2 font-cursive py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
-            icon={
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-              </svg>
-            }
-          />
-          <Button
-            buttonText="Graph löschen"
-            onClick={clearBoard}
-            className="duration-300 hover:bg-gray-100 text-black border-red-700 border-2 py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
-            icon={
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            }
-          />
+        <Button
+          buttonText="Graph bearbeiten"
+          onClick={handleGraphEditorToggle}
+          className="duration-300 hover:bg-gray-100 text-black border-red-700 border-2 font-cursive py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+            </svg>
+          }
+        />
+        <Button
+          buttonText="Graph löschen"
+          onClick={clearBoard}
+          className="duration-300 hover:bg-gray-100 text-black border-red-700 border-2 py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline flex items-center justify-center"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          }
+        />
         <div className="flex justify-around items-center mb-4">
           <Button
             buttonText="Export"
@@ -173,9 +179,7 @@ const App: React.FC = () => {
               </svg>
             }
           />
-
         </div>
-
       </div>
       <div className="flex flex-col flex-grow p-6 space-y-4">
         <div className="flex flex-row h-full">

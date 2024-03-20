@@ -12,9 +12,15 @@ interface CPPResult {
   wastedCost: number;
 }
 
+interface TSPResult {
+  path: number[]; // The sequence of node IDs for the shortest path
+  distance: number; // The total distance of that path
+}
+
+
 interface ResultProps {
   algorithm: 'Dijkstra' | 'CPP' | 'TSP' | null;
-  results: DijkstraResult | CPPResult | null;
+  results: DijkstraResult | CPPResult | TSPResult | null;
 }
 
 const Result: React.FC<ResultProps> = ({ algorithm, results }) => {
@@ -61,6 +67,18 @@ const Result: React.FC<ResultProps> = ({ algorithm, results }) => {
           </div>
         </div>
       );
+
+      case 'TSP':
+        const tspResults = results as TSPResult;
+        return (
+          <div className="overflow-auto max-h-[calc(100%-2rem)]">
+            <h2 className="text-xl font-bold mb-4">TSP Results</h2>
+            <div>
+              <p className="mb-2">Path: {tspResults.path.join(' -> ')}</p>
+              <p>Total Distance: {tspResults.distance}</p>
+            </div>
+          </div>
+        );
     default:
       return <div>Unsupported algorithm.</div>;
   }
