@@ -1,42 +1,79 @@
-import { Node, Edge } from './dijkstra'; // Assuming Node and Edge types are exported
-
-// Function to calculate the distance between two nodes
-function calculateDistance(node1: Node, node2: Node): number {
-    return Math.sqrt(Math.pow(node1.x - node2.x, 2) + Math.pow(node1.y - node2.y, 2));
-}
-
-// Generate all permutations of an array's elements
-function generatePermutations<T>(array: T[]): T[][] {
-    if (array.length <= 2) return array.length === 2 ? [array, [array[1], array[0]]] : [array];
-    return array.reduce((acc, item, i) =>
-        acc.concat(generatePermutations([...array.slice(0, i), ...array.slice(i + 1)]).map(val => [item, ...val])), [] as T[][]);
-}
-
-// Traveling Salesman Problem solver function
-export function solveTSP(nodes: Node[]): { path: number[], distance: number } {
-    const permutations = generatePermutations(nodes.slice(1)); // Exclude the first node from permutations for a fixed starting point
+interface Node {
+    id: number;
+    x: number;
+    y: number;
+  }
+  
+  interface Edge {
+    id: number;
+    from: number;
+    to: number;
+    weight: number;
+  }
+  
+// Helper function to find the nearest neighbor
+function findNearestNeighbor(currentNodeId: number, nodes: Node[], edges: Edge[], visited: Set<number>): number | null {
+    let nearestNodeId: number | null = null;
     let shortestDistance = Infinity;
-    let shortestPath: Node[] = [];
 
-    permutations.forEach(permutation => {
-        const path = [nodes[0], ...permutation];
-        let totalDistance = 0;
-
-        for (let i = 0; i < path.length - 1; i++) {
-            totalDistance += calculateDistance(path[i], path[i + 1]);
-        }
-
-        // Connect the last node back to the first to complete the circuit
-        totalDistance += calculateDistance(path[path.length - 1], path[0]);
-
-        if (totalDistance < shortestDistance) {
-            shortestDistance = totalDistance;
-            shortestPath = path;
+    edges.forEach(edge => {
+        if (edge.from === currentNodeId && !visited.has(edge.to) && edge.weight < shortestDistance) {
+            shortestDistance = edge.weight;
+            nearestNodeId = edge.to;
+        } else if (edge.to === currentNodeId && !visited.has(edge.from) && edge.weight < shortestDistance) {
+            shortestDistance = edge.weight;
+            nearestNodeId = edge.from;
         }
     });
 
+    return nearestNodeId;
+}
+
+// Modify the TSP using a revised Nearest Neighbor algorithm that backtracks if necessary
+export function solveTSP(nodes: Node[], edges: Edge[]): { path: number[], distance: number } {
+    if (nodes.length === 0) return { path: [], distance: 0 };
+
+    let totalDistance = 0;
+    let path: number[] = [nodes[0].id]; // Start from the first node
+    let visited = new Set<number>([nodes[0].id]);
+
+    while (visited.size < nodes.length) {
+        let lastNodeId = path[path.length - 1];
+        let nearestNodeId = findNearestNeighbor(lastNodeId, nodes, edges, visited);
+
+        if (nearestNodeId !== null) {
+            const edge = edges.find(edge => (edge.from === lastNodeId && edge.to === nearestNodeId) || (edge.to === lastNodeId && edge.from === nearestNodeId));
+            if (edge) {
+                totalDistance += edge.weight;
+                path.push(nearestNodeId);
+                visited.add(nearestNodeId);
+            }
+        } else {
+            // Find the nearest unvisited node from any of the visited nodes
+            let found = false;
+            for (const visitedNodeId of visited) {
+                nearestNodeId = findNearestNeighbor(visitedNodeId, nodes, edges, visited);
+                if (nearestNodeId !== null) {
+                    const edge = edges.find(edge => (edge.from === visitedNodeId && edge.to === nearestNodeId) || (edge.to === visitedNodeId && edge.from === nearestNodeId));
+                    if (edge) {
+                        totalDistance += edge.weight;
+                        path.push(visitedNodeId, nearestNodeId); // backtrack if necessary
+                        visited.add(nearestNodeId);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!found) {
+                console.error('Failed to find a path that visits all nodes');
+                break; // No path found that visits all nodes, exit the loop
+            }
+        }
+    }
+
     return {
-        path: shortestPath.map(node => node.id),
-        distance: shortestDistance
+        path,
+        distance: totalDistance
     };
 }

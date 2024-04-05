@@ -75,7 +75,7 @@ const App: React.FC = () => {
   const handleCloseDijkstraInfo = () => setShowDijkstraInfo(false);
 
   const handleTSPClick = () => {
-    const results = solveTSP(nodes);
+    const results = solveTSP(nodes, edges);
     setCurrentAlgorithm('TSP');
     setAlgorithmResults(results);
   };
@@ -186,7 +186,7 @@ const App: React.FC = () => {
           <div className="flex flex-col h-full">
             <Graph onNodeSelect={setSelectedNode} selectedNode={selectedNode} isManualWeightInput={isManualWeightInput} isGraphBidirectional={isGraphBidirectional} />
           </div>
-          <div className="flex flex-col w-[calc(95vw-1000px)] h-full">
+          <div className="flex flex-col w-[calc(94vw-1000px)] h-full">
             <div className="flex flex-col bg-white rounded-lg shadow-md h-full">
               <div className="flex flex-col flex-1 overflow-hidden">
                 <Matrix isGraphBidirectional={isGraphBidirectional} />
